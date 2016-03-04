@@ -21,6 +21,10 @@ if [ "$DATABASE" != "admin" ]; then
     mongo admin -u $USER -p $PASS << EOF
 use $DATABASE
 db.createUser({user: '$USER', pwd: '$PASS', roles:[{role:'dbOwner',db:'$DATABASE'}]})
+use admin
+db.createRole( { role: "executeFunctions", privileges: [ { resource: { anyResource: true  }, actions: [ "anyAction"  ]  }  ], roles: []  }  )
+use $DATABASE
+db.grantRolesToUser("$USER", [ { role: "executeFunctions", db: "admin"  }  ])
 EOF
 fi
 
