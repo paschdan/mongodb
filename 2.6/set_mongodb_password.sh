@@ -13,10 +13,18 @@ while [[ RET -ne 0 ]]; do
     RET=$?
 done
 
-echo "=> Creating an ${USER} user with a ${_word} password in MongoDB"
+echo "=> Creating an ${USER} user with a ${_word} password and eval rights in MongoDB"
 mongo admin << EOF
 use $DATABASE
-db.createUser({user: '$USER', pwd: '$PASS', roles:[{role:'dbOwner',db:'$DATABASE'}]})
+db.createUser({user: '$USER', pwd: '$PASS', roles:[{role:'root',db:'$DATABASE'}]})
+EOF
+
+echo "=> Setting eval rights"
+mongo -u $USER -p $PASS admin << EOF
+db.createRole( { role: "executeFunctions", privileges: [ { resource: { anyResource: true  }, actions: [ "anyAction"  ]  }  ], roles: []  }  )
+use $DATABASE
+db.grantRolesToUser("$USER", [ { role: "executeFunctions", db: "admin"  }  ])
+
 EOF
 
 echo "=> Done!"
