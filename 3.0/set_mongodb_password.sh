@@ -24,6 +24,14 @@ db.createUser({user: '$USER', pwd: '$PASS', roles:[{role:'dbOwner',db:'$DATABASE
 EOF
 fi
 
+echo "=> Setting eval rights"
+mongo -u $USER -p $PASS admin << EOF
+db.createRole( { role: "executeFunctions", privileges: [ { resource: { anyResource: true  }, actions: [ "anyAction"  ]  }  ], roles: []  }  )
+use $DATABASE
+db.grantRolesToUser("$USER", [ { role: "executeFunctions", db: "admin"  }  ])
+
+EOF
+
 echo "=> Done!"
 touch /data/db/.mongodb_password_set
 
